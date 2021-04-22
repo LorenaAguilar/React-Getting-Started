@@ -1,0 +1,178 @@
+Doubts: https://jscomplete.com/learn/1rd-reactful
+
+creat-react-app:
+To use the create-react-app is very important to have Nodejs installed in your machine
+
+There are two ways of create a project
+1. npm i -g create-react-app 
+    1.1 create-react-app {nome_projeto}
+
+ou 
+
+    npx reactful {nome_projeto} ==> Dar preferência pois instala tudo que precisamos bonitinho
+
+    yarn run eject => This brings every dependence that the app is using to the project
+
+2. Initializing:
+    2.1 mkdir {nome_novo_diretorio}  => Create a new directory 
+    2.2 cd {nome_novo_diretorio} => Go into de new directory
+    2.3 yarn init -y => Initialize the package.json 
+
+3. Installing main dependencies: 
+    3.1 yarn add express => install express
+    3.2 yarn add react => install react
+    3.3 yarn add react-dom => install react-dom
+    3.4 yarn add webpack webpack-cli => webpack is used to bundle your modules
+    3.5 yarn add babel-loader @babel/core @babel/node @babel/preset-env @babel/preset-react => install babel's packages
+
+4. Installing Development Dependencies:
+    3.1 yarn add -D nodemon => allows the application to reload every time we make a change, if we don't put this, we need to make the reload manually
+    3.2 yarn add -D eslint babel-eslint eslint-plugin-react eslint-plugin-react-hooks => Install Eslint 
+
+*** O "-D" indica que isso pertence ao ambiente de desenvolvimento
+
+5. Configurations:  
+    5.1 To configure eslint, we need to create a new file named .eslintrc.js on the project and add the lines bellow:
+    
+module.exports = {
+  parser: 'babel-eslint',
+  env: {
+    browser: true,
+    commonjs: true,
+    es6: true,
+    node: true,
+    jest: true,
+  },
+  parserOptions: {
+    ecmaVersion: 2020,
+    ecmaFeatures: {
+      impliedStrict: true,
+      jsx: true,
+    },
+    sourceType: 'module',
+  },
+  plugins: ['react', 'react-hooks'],
+  extends: [
+    'eslint:recommended',
+    'plugin:react/recommended',
+    'plugin:react-hooks/recommended',
+  ],
+  settings: {
+    react: {
+      version: 'detect',
+    },
+  },
+  rules: {
+    // You can do your customizations here...
+    // For example, if you don't want to use the prop-types package,
+    // you can turn off that recommended rule with: 'react/prop-types': ['off']
+  },
+};
+
+
+6. A simple structure can be like the lines bellow: Ps. This is not obrigatory, but makes webpack simpler
+
+fulljs/
+  dist/
+    main.js
+  src/
+    index.js
+    components/
+      App.js
+    server/
+      server.js
+
+7. Configure Webpack and Babel
+    7.1 To configure Babel, we need to create a new file named babel.config.js on the project and add the lines bellow:
+
+    module.exports = {
+     presets: ['@babel/preset-env', '@babel/preset-react'],
+    };
+
+    7.2 To configure webpack, we need to create a new file named babel.config.js on the project and add the lines bellow:
+
+    module.exports = {
+    module: {
+      rules: [
+        {
+          test: /\.js$/,
+          exclude: /node_modules/,
+          use: {
+            loader: 'babel-loader',
+          },
+        },
+      ],
+    },
+  };
+
+8.  Creating npm Scripts for Development:
+    8.1 Inside the package.json we include the lines above:
+      
+  scripts: {
+      "test": "jest",
+      "dev:server": "nodemon --exec babel-node src/server/server.js --ignore dist/",
+      "dev:bundler": "webpack -w --mode=development"
+}
+    
+9. Finally, to see if everything is working, we can add the lines above:
+
+  9.1 On the src/components/App.js:
+
+    import React, { useState } from 'react';
+
+      export default function App() {
+        const [count, setCount] = useState(0);
+        return (
+          <div>
+            This is a sample stateful and server-side
+            rendered React application.
+            <br />
+            <br />
+            Here is a button that will track
+            how many times you click it:
+            <br />
+            <br />
+            <button onClick={() => setCount(count + 1)}>{count}</button>
+          </div>
+        );
+      }
+
+  9.2 On the src/index.js
+
+      import React from 'react';
+      import ReactDOM from 'react-dom';
+
+      import App from './components/App';
+
+      ReactDOM.hydrate(
+        <App />,
+        document.getElementById('mountNode'),
+      );
+
+  9.3 On the src/server/server.js
+
+      import express from 'express';
+      import React from 'react';
+      import ReactDOMServer from 'react-dom/server';
+      import App from '../components/App';
+
+      const server = express();
+      server.use(express.static('dist'));
+
+      server.get('/', (req, res) => {
+        const initialMarkup = ReactDOMServer.renderToString(<App />);
+
+        res.send(`
+          <html>
+            <head>
+              <title>Sample React App</title>
+            </head>
+            <body>
+              <div id="mountNode">${initialMarkup}</div>
+              <script src="/main.js"></script>
+            </body>
+          </html>
+        `)
+      });
+
+      server.listen(4242, () => console.log('Server is running...'));
